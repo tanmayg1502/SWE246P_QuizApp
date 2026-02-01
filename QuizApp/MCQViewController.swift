@@ -76,6 +76,7 @@ final class MCQViewController: UIViewController, UIPickerViewDataSource, UIPicke
 		])
 
 		updateUI()
+		NotificationCenter.default.addObserver(self, selector: #selector(handleReset), name: .quizShouldReset, object: nil)
 	}
 
 	private func updateUI() {
@@ -142,5 +143,13 @@ final class MCQViewController: UIViewController, UIPickerViewDataSource, UIPicke
 
 	func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
 		selectedIndex = row
+	}
+
+	@objc private func handleReset() {
+		Score.shared.reset()
+		currentIndex = 0
+		answered.removeAll()
+		selectedIndex = 0
+		updateUI()
 	}
 }

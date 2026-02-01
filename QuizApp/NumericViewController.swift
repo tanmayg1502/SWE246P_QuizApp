@@ -7,14 +7,9 @@
 import UIKit
 
 final class NumericViewController: UIViewController, UITextFieldDelegate {
-	private let questions: [NumericQuestion] = [
-		NumericQuestion(prompt: "How many sides does a hexagon have?", answer: 6),
-		NumericQuestion(prompt: "What is 9 × 7?", answer: 63),
-		NumericQuestion(prompt: "How many minutes are in 2.5 hours?", answer: 150)
-	]
-
 	private var currentIndex = 0
 	private var answered: Set<Int> = []
+	private var lastQuestionCount = 0
 
 	private let questionLabel = UILabel()
 	private let answerField = UITextField()
@@ -25,6 +20,14 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 	required init?(coder: NSCoder) {
 		super.init(coder: coder)
 		tabBarItem = UITabBarItem(title: "Numeric", image: UIImage(systemName: "123.rectangle"), tag: 1)
+	}
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		refreshForQuestionChanges()
+	}
+
+	private var questions: [NumericQuestion] {
+		QuestionBank.shared.questions
 	}
 
 	override func viewDidLoad() {
@@ -84,9 +87,20 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		])
 
 		updateUI()
+		NotificationCenter.default.addObserver(self, selector: #selector(handleReset), name: .quizShouldReset, object: nil)
 	}
 
 	private func updateUI() {
+		guard !questions.isEmpty else {
+			questionLabel.text = "No numeric questions available."
+			answerField.text = ""
+			resultLabel.text = ""
+			resultLabel.isHidden = true
+			submitButton.isEnabled = false
+			nextButton.isEnabled = false
+			return
+		}
+
 		let question = questions[currentIndex]
 		questionLabel.text = question.prompt
 		answerField.text = ""
@@ -97,7 +111,7 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 	}
 
 	private func updateNextButton() {
-		nextButton.isEnabled = answered.count < questions.count
+		nextButton.isEnabled = !questions.isEmpty && answered.count < questions.count
 	}
 
 	private func nextAvailableIndex(from index: Int) -> Int? {
@@ -112,6 +126,7 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 	}
 
 	@objc private func submitTapped() {
+		guard !questions.isEmpty else { return }
 		guard !answered.contains(currentIndex) else { return }
 		guard let text = answerField.text, let value = Double(text) else { return }
 		let question = questions[currentIndex]
@@ -138,7 +153,7 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 
 	@objc private func textDidChange() {
 		let text = answerField.text ?? ""
-		submitButton.isEnabled = !answered.contains(currentIndex) && Double(text) != nil
+		submitButton.isEnabled = !questions.isEmpty && !answered.contains(currentIndex) && Double(text) != nil
 	}
 
 	@objc private func dismissKeyboard() {
@@ -165,5 +180,24 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		if minusCount == 1 && !updated.hasPrefix("-") { return false }
 
 		return true
+	}
+
+	private func refreshForQuestionChanges() {
+		if lastQuestionCount != questions.count {
+			lastQuestionCount = questions.count
+			currentIndex = 0
+			answered.removeAll()
+		} else if currentIndex >= questions.count && !questions.isEmpty {
+			currentIndex = 0
+			answered.removeAll()
+		}
+		updateUI()
+	}
+
+	@objc private func handleReset() {
+		Score.shared.reset()
+		currentIndex = 0
+		answered.removeAll()
+		updateUI()
 	}
 }

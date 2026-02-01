@@ -22,6 +22,11 @@ final class Score {
 			incorrect += 1
 		}
 	}
+
+	func reset() {
+		correct = 0
+		incorrect = 0
+	}
 }
 
 struct MCQQuestion {
@@ -33,4 +38,8 @@ struct MCQQuestion {
 struct NumericQuestion {
 	let prompt: String
 	let answer: Double
+}
+
+extension Notification.Name {
+	static let quizShouldReset = Notification.Name("quizShouldReset")
 }

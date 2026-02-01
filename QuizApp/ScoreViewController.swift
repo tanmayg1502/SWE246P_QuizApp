@@ -47,10 +47,16 @@ final class ScoreViewController: UIViewController {
 			stackView.leadingAnchor.constraint(greaterThanOrEqualTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 24),
 			stackView.trailingAnchor.constraint(lessThanOrEqualTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -24)
 		])
+
+		NotificationCenter.default.addObserver(self, selector: #selector(handleReset), name: .quizShouldReset, object: nil)
 	}
 
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
+		updateScoreUI()
+	}
+
+	private func updateScoreUI() {
 		let correct = Score.shared.correct
 		let incorrect = Score.shared.incorrect
 		correctLabel.text = "Correct: \(correct)"
@@ -64,4 +70,38 @@ final class ScoreViewController: UIViewController {
 			view.backgroundColor = .white
 		}
 	}
+
+	@objc private func handleReset() {
+		updateScoreUI()
+	}
 }
+
+final class QuestionBank {
+	static let shared = QuestionBank()
+
+	private(set) var questions: [NumericQuestion] = []
+	private let defaultQuestions: [NumericQuestion] = [
+		NumericQuestion(prompt: "How many sides does a hexagon have?", answer: 6),
+		NumericQuestion(prompt: "What is 9 × 7?", answer: 63),
+		NumericQuestion(prompt: "How many minutes are in 2.5 hours?", answer: 150),
+		NumericQuestion(prompt: "What is 12 ÷ 3?", answer: 4),
+		NumericQuestion(prompt: "How many seconds are in 3 minutes?", answer: 180),
+		NumericQuestion(prompt: "What is 15 × 8?", answer: 120)
+	]
+
+	private init() { questions = defaultQuestions }
+
+	func getQuestion(_ at: IndexPath) -> NumericQuestion { questions[at.row] }
+
+	func moveQuestion(from: IndexPath, to: IndexPath) {
+		let question = questions[from.row]
+		questions.remove(at: from.row)
+		questions.insert(question, at: to.row)
+	}
+
+	func deleteQuestion(at: IndexPath) { questions.remove(at: at.row) }
+
+	func resetToDefaults() { questions = defaultQuestions }
+}
+
+

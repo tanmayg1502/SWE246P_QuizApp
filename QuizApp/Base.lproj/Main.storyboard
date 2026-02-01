@@ -72,10 +72,10 @@
             </objects>
             <point key="canvasLocation" x="461" y="905"/>
         </scene>
-        <!--Item-->
+        <!--Questions-->
         <scene sceneID="aPl-jw-XgD">
             <objects>
-                <tableViewController id="pCe-U4-p0l" sceneMemberID="viewController">
+                <tableViewController id="pCe-U4-p0l" customClass="QuestionListViewController" customModule="QuizApp" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="fnX-Y6-Q2b">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -95,7 +95,7 @@
                             <outlet property="delegate" destination="pCe-U4-p0l" id="r6z-Qq-M6p"/>
                         </connections>
                     </tableView>
-                    <tabBarItem key="tabBarItem" title="Item" id="pa6-QE-yB0"/>
+                    <tabBarItem key="tabBarItem" title="Questions" id="pa6-QE-yB0"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="F97-yg-iVE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
