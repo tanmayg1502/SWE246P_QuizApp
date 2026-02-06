@@ -12,6 +12,7 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 	private var lastQuestionCount = 0
 
 	private let questionLabel = UILabel()
+	private let imageView = UIImageView()
 	private let answerField = UITextField()
 	private let resultLabel = UILabel()
 	private let submitButton = UIButton(type: .system)
@@ -37,6 +38,10 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		questionLabel.font = UIFont.preferredFont(forTextStyle: .title2)
 		questionLabel.numberOfLines = 0
 		questionLabel.textAlignment = .center
+
+		imageView.contentMode = .scaleAspectFit
+		imageView.clipsToBounds = true
+		imageView.backgroundColor = .secondarySystemBackground
 
 		answerField.borderStyle = .roundedRect
 		answerField.attributedPlaceholder = NSAttributedString(
@@ -67,6 +72,7 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		stackView.translatesAutoresizingMaskIntoConstraints = false
 
 		stackView.addArrangedSubview(questionLabel)
+		stackView.addArrangedSubview(imageView)
 		stackView.addArrangedSubview(answerField)
 		stackView.addArrangedSubview(resultLabel)
 		stackView.addArrangedSubview(submitButton)
@@ -82,6 +88,8 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 			questionLabel.widthAnchor.constraint(equalTo: stackView.widthAnchor),
 			resultLabel.widthAnchor.constraint(equalTo: stackView.widthAnchor),
 			answerField.widthAnchor.constraint(equalTo: stackView.widthAnchor),
+			imageView.widthAnchor.constraint(equalTo: stackView.widthAnchor),
+			imageView.heightAnchor.constraint(equalToConstant: 180),
 			submitButton.widthAnchor.constraint(equalToConstant: 200),
 			nextButton.widthAnchor.constraint(equalToConstant: 200)
 		])
@@ -94,6 +102,9 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		guard !questions.isEmpty else {
 			questionLabel.text = "No numeric questions available."
 			answerField.text = ""
+			answerField.isEnabled = false
+			imageView.image = nil
+			imageView.isHidden = true
 			resultLabel.text = ""
 			resultLabel.isHidden = true
 			submitButton.isEnabled = false
@@ -104,6 +115,14 @@ final class NumericViewController: UIViewController, UITextFieldDelegate {
 		let question = questions[currentIndex]
 		questionLabel.text = question.prompt
 		answerField.text = ""
+		answerField.isEnabled = true
+		if let key = question.imageKey, let image = ImageStore.shared.image(forKey: key) {
+			imageView.image = image
+			imageView.isHidden = false
+		} else {
+			imageView.image = nil
+			imageView.isHidden = true
+		}
 		resultLabel.text = ""
 		resultLabel.isHidden = true
 		submitButton.isEnabled = false

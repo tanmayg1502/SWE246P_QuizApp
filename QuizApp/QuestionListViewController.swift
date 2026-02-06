@@ -9,6 +9,12 @@ import UIKit
 
 final class NumericQuestionTableCell: UITableViewCell {
 	static let reuseIdentifier = "NumericalQuestionCell"
+	private static let numberFormatter: NumberFormatter = {
+		let formatter = NumberFormatter()
+		formatter.minimumFractionDigits = 0
+		formatter.maximumFractionDigits = 4
+		return formatter
+	}()
 	
 	private let questionLabel = UILabel()
 	private let answerLabel = UILabel()
@@ -45,19 +51,21 @@ final class NumericQuestionTableCell: UITableViewCell {
 		])
 	}
 	
+	// Added number formatter here to the answer label
 	func configure(_ with: NumericQuestion) {
 		questionLabel.text = with.prompt
-		answerLabel.text = "Answer: \(with.answer)"
+		let formatted = Self.numberFormatter.string(from: NSNumber(value: with.answer)) ?? "\(with.answer)"
+		answerLabel.text = "Answer: \(formatted)"
 	}
 }
 
 
 final class QuestionListViewController: UITableViewController {
-	private let editButton = UIButton(type: .system)
+	private let headerNavBar = UINavigationBar()
+	private var editBarButton: UIBarButtonItem?
 	
 	required init?(coder: NSCoder) {
 		super.init(coder: coder)
-		tabBarItem = UITabBarItem(title: "Questions", image: UIImage(systemName: "list.number"), tag: 3)
 	}
 	
 	override func viewDidLoad() {
@@ -65,44 +73,68 @@ final class QuestionListViewController: UITableViewController {
 		tableView.register(NumericQuestionTableCell.self, forCellReuseIdentifier: NumericQuestionTableCell.reuseIdentifier)
 		tableView.rowHeight = UITableView.automaticDimension
 		tableView.estimatedRowHeight = 60
-		setupEditHeader()
+		navigationController?.tabBarItem = UITabBarItem(title: "Questions", image: UIImage(systemName: "list.number"), tag: 3) // nav bar
+		setupHeaderNavBar()
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
+		navigationController?.setNavigationBarHidden(true, animated: false)
 		tableView.reloadData()
 	}
+
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		if let header = tableView.tableHeaderView {
+			var frame = header.frame
+			if frame.width != tableView.bounds.width {
+				frame.size.width = tableView.bounds.width
+				header.frame = frame
+				tableView.tableHeaderView = header
+			}
+		}
+	}
 	
-	private func setupEditHeader() {
-		let headerHeight: CGFloat = 56
+	override func viewWillDisappear(_ animated: Bool) {
+		super.viewWillDisappear(animated)
+		navigationController?.setNavigationBarHidden(false, animated: false)
+	}
+
+	private func setupHeaderNavBar() {
+		let headerHeight: CGFloat = 50
 		let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: headerHeight))
-		
-		editButton.setTitle("Edit", for: .normal)
-		editButton.frame = CGRect(x: 16, y:8, width: headerView.bounds.width - 32, height: 40)
-		editButton.autoresizingMask = [.flexibleWidth]
-		editButton.backgroundColor = .systemBlue
-		editButton.setTitleColor(.white, for: .normal)
-		editButton.layer.cornerRadius = 8
-		editButton.addTarget(self, action: #selector(toggleEditing), for: .touchUpInside)
-		
-		headerView.addSubview(editButton)
+		headerNavBar.frame = headerView.bounds
+		headerNavBar.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+
+		let navItem = UINavigationItem(title: "Questions")
+		let editButton = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(toggleEditing))
+		let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addQuestion))
+		navItem.leftBarButtonItem = editButton
+		navItem.rightBarButtonItem = addButton
+
+		editBarButton = editButton
+		headerNavBar.items = [navItem]
+
+		headerView.addSubview(headerNavBar)
 		tableView.tableHeaderView = headerView
 	}
 	
 	@objc private func toggleEditing() {
 		let newState = !tableView.isEditing
 		tableView.setEditing(newState, animated: true)
-		editButton.setTitle(newState ? "Done" : "Edit", for: .normal)
-		if !newState {
-			Score.shared.reset()
-			NotificationCenter.default.post(name: .quizShouldReset, object: nil)
-		}
+		editBarButton?.title = newState ? "Done" : "Edit"
 	}
 	
 	override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		QuestionBank.shared.questions.count
 	}
 	
+
+	@objc private func addQuestion() {
+		let question = QuestionBank.shared.createQuestion()
+		let detail = NumericDetailViewController(question: question)
+		navigationController?.pushViewController(detail, animated: true)
+	}
 	override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		guard let cell = tableView.dequeueReusableCell(withIdentifier: NumericQuestionTableCell.reuseIdentifier, for: indexPath) as? NumericQuestionTableCell else {
 			return UITableViewCell()
@@ -110,6 +142,14 @@ final class QuestionListViewController: UITableViewController {
 		let item = QuestionBank.shared.getQuestion(indexPath)
 		cell.configure(item)
 		return cell
+	}
+
+	override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+		guard !tableView.isEditing else { return }
+		tableView.deselectRow(at: indexPath, animated: true)
+		let item = QuestionBank.shared.getQuestion(indexPath)
+		let detail = NumericDetailViewController(question: item)
+		navigationController?.pushViewController(detail, animated: true)
 	}
 	
 	override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {

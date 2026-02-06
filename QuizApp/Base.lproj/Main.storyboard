@@ -20,7 +20,7 @@
                         <segue destination="MCQ-VC" kind="relationship" relationship="viewControllers" id="SEG-MCQ"/>
                         <segue destination="NUM-VC" kind="relationship" relationship="viewControllers" id="SEG-NUM"/>
                         <segue destination="SCORE-VC" kind="relationship" relationship="viewControllers" id="SEG-SCORE"/>
-                        <segue destination="pCe-U4-p0l" kind="relationship" relationship="viewControllers" id="R7X-IH-zU8"/>
+                        <segue destination="NAV-QUEST" kind="relationship" relationship="viewControllers" id="R7X-IH-zU8"/>
                     </connections>
                 </tabBarController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FR-TAB" sceneMemberID="firstResponder"/>
@@ -72,6 +72,23 @@
             </objects>
             <point key="canvasLocation" x="461" y="905"/>
         </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="SCN-QUEST-NAV">
+            <objects>
+                <navigationController id="NAV-QUEST" sceneMemberID="viewController">
+                    <tabBarItem key="tabBarItem" title="Questions" id="pa6-QE-yB0"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="NAV-QUEST-Bar">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="pCe-U4-p0l" kind="relationship" relationship="rootViewController" id="SEG-QUEST-ROOT"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="FR-QUEST-NAV" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-955" y="825"/>
+        </scene>
         <!--Questions-->
         <scene sceneID="aPl-jw-XgD">
             <objects>
@@ -95,7 +112,6 @@
                             <outlet property="delegate" destination="pCe-U4-p0l" id="r6z-Qq-M6p"/>
                         </connections>
                     </tableView>
-                    <tabBarItem key="tabBarItem" title="Questions" id="pa6-QE-yB0"/>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="F97-yg-iVE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

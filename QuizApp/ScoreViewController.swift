@@ -67,7 +67,7 @@ final class ScoreViewController: UIViewController {
 		} else if incorrect > correct {
 			view.backgroundColor = .systemRed
 		} else {
-			view.backgroundColor = .white
+			view.backgroundColor = .systemBackground
 		}
 	}
 
@@ -75,33 +75,4 @@ final class ScoreViewController: UIViewController {
 		updateScoreUI()
 	}
 }
-
-final class QuestionBank {
-	static let shared = QuestionBank()
-
-	private(set) var questions: [NumericQuestion] = []
-	private let defaultQuestions: [NumericQuestion] = [
-		NumericQuestion(prompt: "How many sides does a hexagon have?", answer: 6),
-		NumericQuestion(prompt: "What is 9 × 7?", answer: 63),
-		NumericQuestion(prompt: "How many minutes are in 2.5 hours?", answer: 150),
-		NumericQuestion(prompt: "What is 12 ÷ 3?", answer: 4),
-		NumericQuestion(prompt: "How many seconds are in 3 minutes?", answer: 180),
-		NumericQuestion(prompt: "What is 15 × 8?", answer: 120)
-	]
-
-	private init() { questions = defaultQuestions }
-
-	func getQuestion(_ at: IndexPath) -> NumericQuestion { questions[at.row] }
-
-	func moveQuestion(from: IndexPath, to: IndexPath) {
-		let question = questions[from.row]
-		questions.remove(at: from.row)
-		questions.insert(question, at: to.row)
-	}
-
-	func deleteQuestion(at: IndexPath) { questions.remove(at: at.row) }
-
-	func resetToDefaults() { questions = defaultQuestions }
-}
-
 
