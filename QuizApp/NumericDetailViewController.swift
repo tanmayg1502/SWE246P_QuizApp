@@ -94,9 +94,10 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 
 		toolbar.translatesAutoresizingMaskIntoConstraints = false
 		let cameraItem = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraTapped))
+		let drawItem = UIBarButtonItem(title: "Draw", style: .plain, target: self, action: #selector(drawTapped))
 		let clearItem = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearImage))
 		let flexible = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-		toolbar.items = [cameraItem, flexible, clearItem]
+		toolbar.items = [cameraItem, drawItem, flexible, clearItem]
 
 		NSLayoutConstraint.activate([
 			contentStack.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
@@ -215,6 +216,8 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 		if let key = question.imageKey {
 			ImageStore.shared.deleteImage(forKey: key)
 		}
+		// Delete drawing data if it exists
+		DrawingStore.shared.deleteDrawing(forKey: question.id.uuidString)
 		// clear question image key and imageView image
 		question.imageKey = nil
 		imageView.image = nil
@@ -227,6 +230,8 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 		// uses edited iamge first, else original
 		let selected = (info[.editedImage] ?? info[.originalImage]) as? UIImage
 		if let image = selected {
+			// remove any existing drawing for this question
+			DrawingStore.shared.deleteDrawing(forKey: question.id.uuidString)
 			// generates key from imageKey or question ID
 			let key = question.imageKey ?? question.id.uuidString
 			// Store in Image store
@@ -243,5 +248,46 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 	// user cancelled, just dismiss picker
 	func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
 		dismiss(animated: true)
+	}
+
+	@objc private func drawTapped() {
+		// open drawing canvas for this question
+		let drawingKey = question.id.uuidString
+		let existingDrawing = DrawingStore.shared.drawing(forKey: drawingKey)
+		let hadExistingDrawing = existingDrawing != nil
+
+		let controller = DrawingViewController(existingDrawing: existingDrawing) { [weak self] drawing, image in
+			guard let self = self else { return }
+			// if the user cleared everything, remove the stored image/drawing
+
+			if drawing.lines.isEmpty {
+				if hadExistingDrawing {
+					DrawingStore.shared.deleteDrawing(forKey: drawingKey)
+					if let oldKey = self.question.imageKey {
+						ImageStore.shared.deleteImage(forKey: oldKey)
+					}
+					self.question.imageKey = nil
+					self.imageView.image = nil
+					QuestionBank.shared.updateQuestion(self.question)
+				}
+				return
+			}
+
+			// persist both the drawing data and the rendered image
+			let newKey = self.question.id.uuidString
+			if let oldKey = self.question.imageKey, oldKey != newKey {
+				ImageStore.shared.deleteImage(forKey: oldKey)
+			}
+
+			DrawingStore.shared.setDrawing(drawing, forKey: drawingKey)
+			if let image = image {
+				ImageStore.shared.setImage(image, forKey: newKey)
+				self.question.imageKey = newKey
+				self.imageView.image = image
+				QuestionBank.shared.updateQuestion(self.question)
+			}
+		}
+
+		navigationController?.pushViewController(controller, animated: true)
 	}
 }

@@ -48,6 +48,7 @@ final class QuestionBank {
 		if let key = question.imageKey {
 			ImageStore.shared.deleteImage(forKey: key)
 		}
+		DrawingStore.shared.deleteDrawing(forKey: question.id.uuidString)
 		didChange()
 	}
 
