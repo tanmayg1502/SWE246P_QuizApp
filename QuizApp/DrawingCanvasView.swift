@@ -8,25 +8,25 @@
 import UIKit
 
 final class DrawingCanvasView: UIView {
-	var lines: [Line] = [] {
+	var lines: [Line] = [] { // all finished lines
 		// redraw whenever lines change
 		didSet { setNeedsDisplay() }
 	}
-	private var currentLine: Line? {
+	private var currentLine: Line? { // the line being drawn during touch
 		// redraw while the user is drawing a line
 		didSet { setNeedsDisplay() }
 	}
 
-	var selectedLineIndex: Int? {
+	var selectedLineIndex: Int? { // highlights a tapped line
 		// highlight the selected line
 		didSet { setNeedsDisplay() }
 	}
 
-	var movingLineIndex: Int?
+	var movingLineIndex: Int? // which line is being currently dragged
 	// block drawing while menus/long-press are active
-	var isDrawingSuppressed = false
+	var isDrawingSuppressed = false // blocks drawing while menus/longpress are active
 	// default pen color
-	var currentColor: DrawingColor = .black
+	var currentColor: DrawingColor = .black // pen color for new lines
 
 	override init(frame: CGRect) {
 		super.init(frame: frame)
@@ -41,24 +41,30 @@ final class DrawingCanvasView: UIView {
 		fatalError("init(coder:) has not been implemented")
 	}
 
+	// Manage drawing state
 	func setDrawing(_ drawing: Drawing) {
+		// load stored lines into the canvas
 		lines = drawing.lines
 	}
 
 	func drawing() -> Drawing {
+		// export current lines as a Drawing
 		Drawing(lines: lines)
 	}
 
 	func clearLines() {
+		// remove all lines and selection
 		lines.removeAll()
 		currentLine = nil
 		selectedLineIndex = nil
 	}
 
 	func cancelCurrentLine() {
+		// discard the in-progress line
 		currentLine = nil
 	}
 
+	// hit tests a tap against lines( distance to segment)
 	func lineIndex(at point: CGPoint) -> Int? {
 		// allow a slightly larger hit target than the line width
 		let threshold: CGFloat = 22
@@ -70,6 +76,7 @@ final class DrawingCanvasView: UIView {
 		return nil
 	}
 
+	// Used when dragging a line
 	func moveLine(at index: Int, by translation: CGPoint) {
 		guard lines.indices.contains(index) else { return }
 		// move both endpoints by the pan translation
@@ -79,6 +86,7 @@ final class DrawingCanvasView: UIView {
 		lines[index].end.y += translation.y
 	}
 
+	// starts a line
 	override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
 		guard !isDrawingSuppressed, movingLineIndex == nil else { return }
 		guard let touch = touches.first else { return }
@@ -87,6 +95,7 @@ final class DrawingCanvasView: UIView {
 		currentLine = Line(start: point, end: point, color: currentColor)
 	}
 
+	// updates the line's end
 	override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
 		guard !isDrawingSuppressed, movingLineIndex == nil else { return }
 		guard let touch = touches.first, var line = currentLine else { return }
@@ -96,6 +105,7 @@ final class DrawingCanvasView: UIView {
 		currentLine = line
 	}
 
+	// saves the line to lines
 	override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
 		guard !isDrawingSuppressed, movingLineIndex == nil else { return }
 		if let line = currentLine {
@@ -122,7 +132,8 @@ final class DrawingCanvasView: UIView {
 			stroke(line: lines[selectedIndex], in: context, isHighlighted: true)
 		}
 	}
-
+	
+	// creates a UIImage snapshot for ImageStore
 	func renderImage() -> UIImage {
 		// render a static image for saving to the ImageStore
 		let format = UIGraphicsImageRendererFormat()

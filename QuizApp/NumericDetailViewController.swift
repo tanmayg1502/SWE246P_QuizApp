@@ -93,6 +93,7 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 		view.addSubview(toolbar)
 
 		toolbar.translatesAutoresizingMaskIntoConstraints = false
+		// toolbar actions for photo, drawing, and clearing
 		let cameraItem = UIBarButtonItem(barButtonSystemItem: .camera, target: self, action: #selector(cameraTapped))
 		let drawItem = UIBarButtonItem(title: "Draw", style: .plain, target: self, action: #selector(drawTapped))
 		let clearItem = UIBarButtonItem(title: "Clear", style: .plain, target: self, action: #selector(clearImage))
@@ -259,7 +260,6 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 		let controller = DrawingViewController(existingDrawing: existingDrawing) { [weak self] drawing, image in
 			guard let self = self else { return }
 			// if the user cleared everything, remove the stored image/drawing
-
 			if drawing.lines.isEmpty {
 				if hadExistingDrawing {
 					DrawingStore.shared.deleteDrawing(forKey: drawingKey)
@@ -287,7 +287,7 @@ final class NumericDetailViewController: UIViewController, UITextFieldDelegate, 
 				QuestionBank.shared.updateQuestion(self.question)
 			}
 		}
-
+		// push the drawing screen
 		navigationController?.pushViewController(controller, animated: true)
 	}
 }

@@ -6,11 +6,17 @@
 //
 
 import UIKit
+/*
+ TAP -> selects a line and shows action sheet
+ Double-tap -> confirmation alert -> clears all lines
+ long-press -> on a line: begins move mode; on blank: shows pen color menu
+ Pan-> moves the selected line
+ */
 
 final class DrawingViewController: UIViewController {
 	private let canvas = DrawingCanvasView()
-	private let existingDrawing: Drawing?
-	private let onSave: (Drawing, UIImage?) -> Void
+	private let existingDrawing: Drawing? // existing drawing is passed so previous reappear
+	private let onSave: (Drawing, UIImage?) -> Void // closure return the drawing + redered image when leaving
 
 	init(existingDrawing: Drawing?, onSave: @escaping (Drawing, UIImage?) -> Void) {
 		self.existingDrawing = existingDrawing
@@ -27,7 +33,6 @@ final class DrawingViewController: UIViewController {
 		view.backgroundColor = .systemBackground
 		title = "Draw"
 		// layout the drawing canvas
-
 		canvas.translatesAutoresizingMaskIntoConstraints = false
 		view.addSubview(canvas)
 		NSLayoutConstraint.activate([
@@ -61,8 +66,10 @@ final class DrawingViewController: UIViewController {
 		canvas.addGestureRecognizer(panGesture)
 	}
 
+	// collects the drawing and snapshot image and calls onSave
 	override func viewWillDisappear(_ animated: Bool) {
 		super.viewWillDisappear(animated)
+		// detect wether the view controller was removed by popping from nav controller or modally dismiss
 		guard isMovingFromParent || isBeingDismissed else { return }
 		// save the drawing when leaving the screen
 		let drawing = canvas.drawing()
@@ -123,6 +130,7 @@ final class DrawingViewController: UIViewController {
 		}
 	}
 
+	// shows the alert
 	private func showLineMenu(at point: CGPoint, lineIndex: Int) {
 		// options for the selected line
 		let alert = UIAlertController(title: "Line", message: nil, preferredStyle: .actionSheet)

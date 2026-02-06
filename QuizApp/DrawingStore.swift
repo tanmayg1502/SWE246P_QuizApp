@@ -18,7 +18,8 @@ final class DrawingStore {
 		directoryURL = baseURL.appendingPathComponent("DrawingStore", isDirectory: true)
 		try? FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
 	}
-
+	
+	// loads JSON-> decodes to Drawing
 	func drawing(forKey key: String) -> Drawing? {
 		// load drawing JSON from disk
 		let url = fileURL(forKey: key)
@@ -27,6 +28,7 @@ final class DrawingStore {
 		return try? decoder.decode(Drawing.self, from: data)
 	}
 
+	// encodes drawing, writes JSON to disk
 	func setDrawing(_ drawing: Drawing, forKey key: String) {
 		// encode drawing as JSON and save it
 		let encoder = JSONEncoder()
@@ -35,6 +37,7 @@ final class DrawingStore {
 		try? data.write(to: url, options: [.atomic])
 	}
 
+	// removes the stores JSON
 	func deleteDrawing(forKey key: String) {
 		// remove drawing JSON from disk
 		let url = fileURL(forKey: key)
